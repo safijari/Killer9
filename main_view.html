@@ -4,30 +4,84 @@
         <link rel="stylesheet" href="/steam_resource/css/39.css">
         <link rel="stylesheet" href="/steam_resource/css/library.css">
         <script src="/static/library.js"></script>
+        <style>
+            body {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            #flatpaklist {
+              list-style-type: none;
+              padding: 0;
+              overflow-y: scroll;
+              height: 90%;
+              margin-bottom: 0;
+            }
+
+            #settings {
+                overflow: none;
+                border-top: 1px #23262e solid;
+                bottom: 0;
+                top: 0;
+                width: 100%;
+            }
+            #settings > div {
+                padding: 12px;
+            }
+
+            li {
+                padding: 12px;
+                border-bottom: 1px solid #23262e;
+            }
+        </style>
     </head>
-    <body>
-        <h2>Hello World</h2>
-	<div class="gamepaddialog_GamepadDialogContent_InnerWidth_2ywyS DialogContent_InnerWidth Panel Focusable gpfocuswithin">
-	    <div class="DialogHeader">Focusable Input</div>
-	    <div class="Panel Focusable gpfocuswithin">
-		<div class="DialogControlsSectionHeader">Input Fields</div>
-		<div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_InlineWrapShiftsChildrenBelow_3LCXh gamepaddialog_WithBottomSeparator_3YKpU gamepaddialog_ExtraPaddingOnChildrenBelow_3nLNL gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable gpfocuswithin"
-		    style="--indent-level:0;">
-		    <div class="gamepaddialog_FieldLabelRow_2VcTl">
-			<div class="gamepaddialog_FieldLabel_3jMlJ">Input</div>
-			<div class="gamepaddialog_FieldChildren_2rhav"><input class="Focusable gpfocus gpfocuswithin"
-				tabindex="0"></div>
-		    </div>
-		</div>
-		<div class="gamepaddialog_Field_eKmEX gamepaddialog_WithFirstRow_2bDqk gamepaddialog_InlineWrapShiftsChildrenBelow_3LCXh gamepaddialog_WithBottomSeparator_3YKpU gamepaddialog_ExtraPaddingOnChildrenBelow_3nLNL gamepaddialog_StandardPadding_xIITX gamepaddialog_HighlightOnFocus_2HFrm Panel Focusable"
-		    style="--indent-level:0;">
-		    <div class="gamepaddialog_FieldLabelRow_2VcTl">
-			<div class="gamepaddialog_FieldLabel_3jMlJ">Text Area</div>
-			<div class="gamepaddialog_FieldChildren_2rhav"><textarea class="Focusable" tabindex="0"></textarea>
-			</div>
-		    </div>
-		</div>
-	    </div>
-	</div>
+    <body style="overflow-y: hidden;">
+	<!-- <div id="dump"></div> -->
+        <ul id="flatpaklist"></ul>
+        <div id="settings">
+            <div id="status"></div>
+        </div>                                          
+
+        <script>
+            // TODO:
+            // - Hide Shortcut
+            // - Check if Shortcut still exists
+
+            const status = document.getElementById("status")
+
+            async function show_list() {
+                status.innerHTML = "Fetching procs...";
+
+                let flatpaks = await get_flatpaks();
+		let s = "";
+
+                flatpaks.forEach(flatpak => {
+                     let e = document.createElement("li");
+                     document.getElementById("flatpaklist").appendChild(e);
+                     e.innerHTML = flatpak[1];
+		     e.onclick = async function() {
+                         launch_flatpak(flatpak[0], flatpak[1]);
+                     }
+		});
+            }
+
+	    async function launch_flatpak(pid, package) {
+                status.innerHTML = "killing proc " + package;
+                let list = await call_plugin_method("kill", {"pid": pid});
+            }
+
+            async function get_flatpaks() {
+                status.innerHTML = "in get flatpaks";
+                let list = await call_plugin_method("get_procs", {});
+                list = JSON.parse(list);
+                status.innerHTML = "got list" + list;
+                return list;
+            }
+
+            function exit() {
+                location.href = "http://127.0.0.1:1337/plugins/iframe";
+            }
+
+            show_list();
+        </script>
     </body>
 </html>
